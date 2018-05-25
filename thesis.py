@@ -40,9 +40,10 @@ def get_info_groups(group):
     }
     response = requests.get('https://api.vk.com/method/groups.getById', params=params_group)
     response = response.json()
-    pprint(response)
-    print(response['response'][0]['id'])
-    data_to_file.append({'id': response['response'][0]['id'], 'members_count':response['response'][0]['members_count'], 'name':response['response'][0]['name']})
+    pprint(response)  # Delete
+    need_data = response['response'][0]
+    id_g, m_c, n_g = need_data['id'], need_data['members_count'], need_data['name']
+    data_to_file.append({'id': id_g, 'members_count': m_c, 'name': n_g})
 
 
 def write_to_file(data):
@@ -56,7 +57,7 @@ def main():
     list_groups_target = set(get_list_groups(ID))
     list_groups_friends = list()
 
-    for friend in list_friends_target:
+    for friend in list_friends_target[0:10]:
         list_groups_friends.append(get_list_groups(friend))
 
     merge_list = lambda merge_list: [group for list_group in merge_list if list_group != None for group in list_group]
