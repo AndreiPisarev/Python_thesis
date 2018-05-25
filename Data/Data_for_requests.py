@@ -9,3 +9,10 @@ params = {
     'access_token': TOKEN,
     'v': VERSION
 }
+
+params_group = {
+            'fields': ['id', 'name', 'members_count'],
+            'access_token': TOKEN,
+            'v': VERSION,
+            'group_id': None
+        }
