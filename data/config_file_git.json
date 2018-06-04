@@ -1,0 +1,7 @@
+{
+  "AUTH_URL": "https://oauth.vk.com/authorize",
+  "APP_ID": 6447963,
+  "VERSION":"5.78",
+  "TOKEN": "secret",
+  "ID": 5030613
+}
