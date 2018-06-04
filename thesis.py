@@ -121,7 +121,7 @@ def main():
     vk.list_friends_target = vk.get_list_friends(vk.id)  # Получаем список друзей 'target'
     vk.list_groups_target = set(vk.get_list_groups(vk.id))  # Получаем список групп 'target' и преобразуем в множество
 
-    for friend in vk.list_friends_target[0:10]:  # Циклом обходим всех друзей и получаем список групп всех его друзей
+    for friend in vk.list_friends_target:  # Циклом обходим всех друзей и получаем список групп всех его друзей
         vk.list_groups_friends.append(vk.get_list_groups(friend))  # vk.list_groups_friends - состоит из вложенных спис.
 
     vk.list_groups_friends = vk.merge_list(vk.list_groups_friends)  # Преобразуем вложенный список в множество
