@@ -57,8 +57,7 @@ class VkReq():
         self.friends_counter = 0
 
         method = 'friends.get'
-        params_request = params
-        params_request['user_id'] = id
+        params_request = {**params, **{'user_id': id}}
         response_friends = self.requests_api(method, params_request)
         list_friends = response_friends['response']['items']
         return list_friends
@@ -98,8 +97,8 @@ class VkReq():
         groups_counter = 0
         for group in groups:
             params_group_request = {**params_group, **{'group_id': group}}
-            print('Запрос информации по группе c ID {}, осталось обработать групп {}'.format(group, (len(groups) -\
-                                                                                            groups_counter)))
+            print('Запрос информации по группе c ID {}, осталось обработать групп {}'.format(group, len(groups) -\
+                                                                                            groups_counter))
             groups_counter += 1
             response = self.requests_api(method, params_group_request)
             need_data = response['response'][0]
@@ -119,7 +118,7 @@ def main():
     vk.list_friends_target = vk.get_list_friends(vk.id)  # Получаем список друзей 'target'
     vk.list_groups_target = set(vk.get_list_groups(vk.id))  # Получаем список групп 'target' и преобразуем в множество
 
-    for friend in vk.list_friends_target:  # Циклом обходим всех друзей и получаем список групп всех его друзей
+    for friend in vk.list_friends_target[0:50]:  # Циклом обходим всех друзей и получаем список групп всех его друзей
         vk.list_groups_friends.append(vk.get_list_groups(friend))  # vk.list_groups_friends - состоит из вложенных спис.
 
     vk.list_groups_friends = vk.merge_list(vk.list_groups_friends)  # Преобразуем вложенный список в множество
