@@ -2,7 +2,7 @@ import json
 import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-path_file = os.path.join(current_dir, 'config_file.json')
+path_file = os.path.join(current_dir, 'config_file_git.json')
 
 with open(path_file) as file:
     data = json.load(file)
