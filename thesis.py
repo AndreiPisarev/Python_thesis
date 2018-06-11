@@ -1,12 +1,11 @@
 import requests
 import json
-from data.data_for_requests import ID, params, params_group
+from data.data_for_requests import ID, params, params_group, ERROR
 import time
-
-ERROR = 'Too many requests per second'
 
 
 def retry(func):
+    """Функция декоратор, делает паузу в 1 сек. при ее вызова, и возвращает к выполнению в вызванной фун-ции"""
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -28,16 +27,17 @@ class VkReq():
     def __init__(self, id):
         """При инициализации класса создаем списки для 'выходных данных' и список для наполнения группами в которых
         состоят друзья 'target' """
-        self.data_to_file = list()
         self.list_groups_friends = list()
         self.list_friends_target = list()
         self.id = id
         self.list_groups_target = list()
+        self.friends_counter = 0  # Используем для счетчика оставшихся api запросов по друзьям
 
 
     @retry
     def requests_api(self, method, params):
-        """Функция принимает метод и параметры для запроса к API"""
+        """Функция принимает метод и параметры для запроса к API, отрабатывает ошибку в ответе API 'Too many requests
+        per second' вызывая исключение RetryException"""
         try:
             response = requests.get('https://api.vk.com/method/{}'.format(method), params=params)
             response.raise_for_status()
@@ -53,9 +53,6 @@ class VkReq():
 
     def get_list_friends(self, id):
         """Функция принимает id пользователя и возврящает список его друзей"""
-
-        self.friends_counter = 0
-
         method = 'friends.get'
         params_request = {**params, **{'user_id': id}}
         response_friends = self.requests_api(method, params_request)
@@ -81,30 +78,27 @@ class VkReq():
 
     def merge_list(self, list_friends):
         """Функция принимает список (вложенный), проходит циклом, проверяет элемент на None, и возврящает множество"""
-        self.merge_list_friends = list()
-
+        merge_list_friends = list()
         for groups in list_friends:
             if groups is not None:
                 for group in groups:
-                    self.merge_list_friends.append(group)
-        return set(self.merge_list_friends)
+                    merge_list_friends.append(group)
+        return set(merge_list_friends)
 
     def get_info_groups(self, groups):
         """Функция принимает id групп и добавляет информацию в список data_to_file в виде словаря (id,
         название группы и количество участников в группе"""
-
         method = 'groups.getById'
-        groups_counter = 0
-        for group in groups:
-            params_group_request = {**params_group, **{'group_id': group}}
-            print('Запрос информации по группе c ID {}, осталось обработать групп {}'.format(group, len(groups) -\
-                                                                                            groups_counter))
-            groups_counter += 1
-            response = self.requests_api(method, params_group_request)
-            need_data = response['response'][0]
-            id_g, m_c, n_g = need_data['id'], need_data['members_count'], need_data['name']
-            self.data_to_file.append({'id': id_g, 'members_count': m_c, 'name': n_g})
-        return self.data_to_file
+        groups_ids = ','.join(str(group) for group in groups)
+        params_group_request = {**params_group, **{'group_ids': groups_ids}}
+        print('Запрос информации по группам (кол-во групп {})'.format(len(groups)))
+        response = self.requests_api(method, params_group_request)
+        need_data = response['response']
+        data_to_file = list()
+        for gr in need_data:
+            id_g, m_c, n_g = gr['id'], gr['members_count'], gr['name']
+            data_to_file.append({'id': id_g, 'members_count': m_c, 'name': n_g})
+        return data_to_file
 
 
     def write_to_file(self, data):
@@ -118,7 +112,7 @@ def main():
     vk.list_friends_target = vk.get_list_friends(vk.id)  # Получаем список друзей 'target'
     vk.list_groups_target = set(vk.get_list_groups(vk.id))  # Получаем список групп 'target' и преобразуем в множество
 
-    for friend in vk.list_friends_target[0:50]:  # Циклом обходим всех друзей и получаем список групп всех его друзей
+    for friend in vk.list_friends_target:  # Циклом обходим всех друзей и получаем список групп всех его друзей
         vk.list_groups_friends.append(vk.get_list_groups(friend))  # vk.list_groups_friends - состоит из вложенных спис.
 
     vk.list_groups_friends = vk.merge_list(vk.list_groups_friends)  # Преобразуем вложенный список в множество
