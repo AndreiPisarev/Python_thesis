@@ -3,6 +3,5 @@
   "APP_ID": 6447963,
   "VERSION":"5.78",
   "TOKEN": "secret",
-  "ID": 5030613,
-  "ERROR": "Too many requests per second"
+  "ID": 5030613
 }

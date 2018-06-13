@@ -1,8 +1,9 @@
 import requests
 import json
-from data.data_for_requests import ID, params, params_group, ERROR
+from data.data_for_requests import ID, params, params_group
 import time
 
+ERROR_TOO_MANY_REQUESTS = 6
 
 def retry(func):
     """Функция декоратор, делает паузу в 1 сек. при ее вызова, и возвращает к выполнению в вызванной фун-ции"""
@@ -43,7 +44,7 @@ class VkReq():
             response.raise_for_status()
             response = response.json()
             if 'error' in response:
-                if response['error']['error_msg'] == ERROR:
+                if response['error']['error_code'] == ERROR_TOO_MANY_REQUESTS:
                     raise RetryException
         except requests.exceptions.ReadTimeout:
             raise RetryException
